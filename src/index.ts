@@ -1,5 +1,4 @@
 import express, {NextFunction, Request, Response} from 'express'
-var jwt = require('jsonwebtoken');
 const cors = require('cors')
 
 const app = express()
