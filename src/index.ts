@@ -1,20 +1,20 @@
 import express, {NextFunction, Request, Response} from 'express'
 import jwt from "express-jwt";
 import jwks from "jwks-rsa";
-import { getUser } from './userData';
+import { getUser, updateUser } from './userData';
 
 const port = process.env.PORT || 8080;
 const app = express();
 
 const jwksCallback = jwks.expressJwtSecret({
-    cache: true,
-    rateLimit: true,
-    jwksRequestsPerMinute: 5,
-    // JWKS url from the Auth0 Tenant
-    jwksUri: "https://dev-yjll6etc.us.auth0.com/.well-known/jwks.json",
-  });
-  
-  var requireJWTAuthentication = jwt({
+  cache: true,
+  rateLimit: true,
+  jwksRequestsPerMinute: 5,
+  // JWKS url from the Auth0 Tenant
+  jwksUri: "https://dev-yjll6etc.us.auth0.com/.well-known/jwks.json",
+});
+
+var requireJWTAuthentication = jwt({
     secret: jwksCallback,
     // The same audience parameter needs to be used by the client to configure their Auth0 SDK
     audience: "hcAuth",
@@ -24,11 +24,12 @@ const jwksCallback = jwks.expressJwtSecret({
     algorithms: ["RS256"],
   });
   
+app.use(express.json())
 app.use((req, res, next) => {
   // allow calling from different domains
   res.set("Access-Control-Allow-Origin", "*");
   // allow authorization header
-  res.set("Access-Control-Allow-Headers", "authorization");
+  res.set("Access-Control-Allow-Headers", ['Content-Type', 'Authorization']);
   next();
 });
 
@@ -37,19 +38,26 @@ app.get("/public", (req: Request, res: Response) =>
 );
 
 app.get(
-    "/private",
+    "/user",
     requireJWTAuthentication,
     (req: any, res: Response) => {
       // requireJWTAuthentication adds a user property with the payload from a valid JWT
-      console.log(req.user.sub)
-      const userData = getUser(req?.user?.sub)
+      const uid = req.user.sub
+      console.log(uid)
+      const userData = getUser(uid)
       return res.json({
         secrets: [
           {userData}
         ],
       });
     }
-  );
+);
+
+app.post('/user', requireJWTAuthentication, (req: any, res: Response) => {
+  const uid = req.user.sub
+  updateUser(req.body, uid)
+  res.json({success: true})
+})
   
 app.listen(port, () => {
   console.log(`Listening on http://localhost:${port}`);

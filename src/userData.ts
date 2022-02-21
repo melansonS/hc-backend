@@ -112,3 +112,7 @@ export function getUser(uid: string) {
     user.totalDays = allCheckedDays.length;
     return user;
 }
+
+export function updateUser (user:UserData, uid:string) {
+  mockData[uid] = user;
+}
