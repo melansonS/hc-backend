@@ -1,4 +1,15 @@
+import { ITheme, ThemeNamesEnum } from "./types"
+
 const { startOfDay, subDays, subMonths, getYear, getMonth } = require('date-fns')
+
+
+type IUserTheme = {
+    colorBlendPercent: number,
+    customTheme: Partial<ITheme> | null,
+    isDarkMode: boolean,
+    themeName: ThemeNamesEnum,
+  }
+  
 
 type UserData = {
   name: string
@@ -8,8 +19,17 @@ type UserData = {
   isStreaking: boolean
   currentStreak: number
   longestStreak: number
-  totalDays: number
+  totalDays: number,
+  theme: IUserTheme
 }
+
+const defaultTheme: IUserTheme =   {
+    colorBlendPercent: 0.14,
+    customTheme: null,
+    isDarkMode: false,
+    themeName: 'INDIGO' as ThemeNamesEnum,
+}
+
 
 const mockData : {[key:string]:UserData} = {
     'google-oauth2|100686009556826214729' : {
@@ -26,13 +46,19 @@ const mockData : {[key:string]:UserData} = {
                 1644555600000, 1644642000000,
                 1644728400000, 1644814800000,
                 1644901200000, 1644987600000,
-                1645074000000
+                1645074000000, 1645160400000
             ],
           },
           isStreaking: false,
           currentStreak: 0,
           longestStreak: 0,
-          totalDays: 0
+          totalDays: 0,
+          theme: {
+            colorBlendPercent: 0.18,
+            customTheme: null,
+            isDarkMode: true,
+            themeName: 'FOUREST' as ThemeNamesEnum,
+          }
     },
     'auth0|620be4e1d8973c00717b81a8': {
         name: 'pete',
@@ -40,7 +66,8 @@ const mockData : {[key:string]:UserData} = {
         isStreaking: false,
         currentStreak: 0,
         longestStreak: 0,
-        totalDays: 0
+        totalDays: 0,
+        theme: defaultTheme
     }
     
 }
