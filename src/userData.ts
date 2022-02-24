@@ -1,6 +1,6 @@
 import { ITheme, ThemeNamesEnum } from "./types"
 
-const { startOfDay, subDays, subMonths, getYear, getMonth } = require('date-fns')
+import { startOfDay, subDays, subMonths, getYear, getMonth } from 'date-fns'
 
 
 type IUserTheme = {
@@ -9,7 +9,7 @@ type IUserTheme = {
     isDarkMode: boolean,
     themeName: ThemeNamesEnum,
   }
-  
+
 
 type UserData = {
   name: string
@@ -69,7 +69,7 @@ const mockData : {[key:string]:UserData} = {
         totalDays: 0,
         theme: defaultTheme
     }
-    
+
 }
 
 export function getUser(uid: string) {
@@ -88,7 +88,7 @@ export function getUser(uid: string) {
     const daysInConsecutiveMonths = user.checkedDays[currentYearMonth] || [];
     let consecutiveMonthIndex = 1;
     let yearMonth = `${getYear(subMonths(today, consecutiveMonthIndex))}${getMonth(subMonths(today, consecutiveMonthIndex))}`;
-    
+
     while(user.checkedDays[yearMonth]) {
         daysInConsecutiveMonths.push(...user.checkedDays[yearMonth])
         consecutiveMonthIndex++;
