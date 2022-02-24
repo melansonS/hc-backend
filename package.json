@@ -4,11 +4,11 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "SET NODE_ENV=development && nodemon",
+    "dev": "export NODE_ENV=development && nodemon",
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
     "build": "tsc",
     "prestart": "npm run build",
-    "start": "SET NODE_ENV=production && node ."
+    "start": "export NODE_ENV=production && node ."
   },
   "author": "",
   "license": "ISC",

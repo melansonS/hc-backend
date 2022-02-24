@@ -1,7 +1,7 @@
 import { ITheme, ThemeNamesEnum } from "./types"
 
 import { startOfDay, subDays, subMonths, getYear, getMonth } from 'date-fns'
-
+import { db } from "./index"
 
 type IUserTheme = {
     colorBlendPercent: number,
@@ -24,12 +24,23 @@ type UserData = {
 }
 
 const defaultTheme: IUserTheme =   {
-    colorBlendPercent: 0.14,
-    customTheme: null,
-    isDarkMode: false,
-    themeName: 'INDIGO' as ThemeNamesEnum,
+  colorBlendPercent: 0.14,
+  customTheme: null,
+  isDarkMode: false,
+  themeName: 'INDIGO' as ThemeNamesEnum,
 }
 
+const makeDefaultUser = (currentYearMonth:string) :UserData=> ({
+  name:'',
+  checkedDays:{
+    [currentYearMonth]: []
+  },
+  isStreaking: false,
+  currentStreak: 0,
+  longestStreak: 0,
+  totalDays: 0,
+  theme: defaultTheme
+})
 
 const mockData : {[key:string]:UserData} = {
     'google-oauth2|100686009556826214729' : {
@@ -72,19 +83,30 @@ const mockData : {[key:string]:UserData} = {
 
 }
 
-export function getUser(uid: string) {
-    const user = mockData[uid]
+
+export async function getUser(uid: string) {
+
     const today = startOfDay(new Date()).getTime();
-    const yesterday = subDays(today, 1).getTime();
     const currentYearMonth = `${getYear(today)}${getMonth(today)}`
+
+    let userFromMongo = await db.collection('Users').findOneAndUpdate(
+      {uid},
+      {$setOnInsert: {uid, body:makeDefaultUser(currentYearMonth)}},
+      {upsert: true, returnDocument:'after'}
+    )
+    //TODO: error handling...
+    const user:UserData = userFromMongo.value.body
+    const yesterday = subDays(today, 1).getTime();
 
     if (user?.checkedDays && !user.checkedDays[currentYearMonth].includes(yesterday)) {
         console.log('am not streaking');
         user.currentStreak = 0;
     }
 
+    //all of this is only calculated on `getUser` which is only called on log in and page load, needs to be moved elsewhere..
+
     let currentStreak = 0
-    // default daysInConsecutiveMonths to values is in the current {checkedDays[rearMonth]} or to an empty array
+    // default daysInConsecutiveMonths to values in the current {checkedDays[rearMonth]} or to an empty array
     const daysInConsecutiveMonths = user.checkedDays[currentYearMonth] || [];
     let consecutiveMonthIndex = 1;
     let yearMonth = `${getYear(subMonths(today, consecutiveMonthIndex))}${getMonth(subMonths(today, consecutiveMonthIndex))}`;
@@ -105,7 +127,7 @@ export function getUser(uid: string) {
     }
 
     const allCheckedDays = user?.checkedDays
-  && Object.values(user.checkedDays).reduce((prev, curr) => prev.concat(curr), []);
+        && Object.values(user.checkedDays).reduce((prev, curr) => prev.concat(curr), []);
 
 
     user.currentStreak = currentStreak;

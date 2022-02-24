@@ -7,8 +7,7 @@ import {NODE_ENV, MONGO_DEV_URI, MONGO_URI} from './config'
 const port = process.env.PORT || 8080;
 const app = express();
 
-
-let db : Db;
+export let db : Db;
 MongoClient.connect(NODE_ENV === 'development' ? MONGO_DEV_URI : MONGO_URI, (err, client) => {
   if(err) return console.error(err)
   console.log('Connected to Mongo DB')
@@ -49,16 +48,14 @@ app.get("/public", (req: Request, res: Response) =>
 app.get(
     "/user",
     requireJWTAuthentication,
-    (req: any, res: Response) => {
+    async (req: any, res: Response) => {
       // requireJWTAuthentication adds a user property with the payload from a valid JWT
       const uid = req.user.sub
       console.log(uid)
-      const userData = getUser(uid)
-      return res.json({
-        secrets: [
-          {userData}
-        ],
-      });
+      const userData = await getUser(uid)
+      return res.json(
+          {success:true, userData}
+      );
     }
 );
 
