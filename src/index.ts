@@ -8,7 +8,7 @@ const port = process.env.PORT || 8080;
 const app = express();
 
 export let db : Db;
-MongoClient.connect(NODE_ENV === 'development' ? MONGO_DEV_URI : MONGO_URI, (err, client) => {
+MongoClient.connect(NODE_ENV === 'production' ? MONGO_URI : MONGO_DEV_URI, (err, client) => {
   if(err) return console.error(err)
   console.log('Connected to Mongo DB')
   db = client.db(NODE_ENV === 'development' ? 'Habit-Calendar-Dev' : 'Habit-Calendar')
