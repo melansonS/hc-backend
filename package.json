@@ -4,11 +4,11 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "export NODE_ENV=development && nodemon",
+    "dev": "SET NODE_ENV=development&&SET DB_NAME=Habit-Calendar-Dev&& nodemon",
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
     "build": "tsc",
     "prestart": "npm run build",
-    "start": "export NODE_ENV=production && node ."
+    "start": "SET NODE_ENV=production&& &&SET DB_NAME=Habit-Calendar&& node ."
   },
   "author": "",
   "license": "ISC",

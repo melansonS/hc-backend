@@ -89,12 +89,12 @@ export async function getUser(uid: string) {
     const today = startOfDay(new Date()).getTime();
     const currentYearMonth = `${getYear(today)}${getMonth(today)}`
 
-    let userFromMongo = await db.collection('Users').findOneAndUpdate(
+    const userFromMongo = await db.collection('Users').findOneAndUpdate(
       {uid},
       {$setOnInsert: {uid, body:makeDefaultUser(currentYearMonth)}},
       {upsert: true, returnDocument:'after'}
     )
-    //TODO: error handling...
+    // TODO: error handling...
     const user:UserData = userFromMongo.value.body
     const yesterday = subDays(today, 1).getTime();
 
@@ -103,7 +103,7 @@ export async function getUser(uid: string) {
         user.currentStreak = 0;
     }
 
-    //all of this is only calculated on `getUser` which is only called on log in and page load, needs to be moved elsewhere..
+    // all of this is only calculated on `getUser` which is only called on log in and page load, needs to be moved elsewhere..
 
     let currentStreak = 0
     // default daysInConsecutiveMonths to values in the current {checkedDays[rearMonth]} or to an empty array

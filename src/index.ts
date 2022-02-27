@@ -3,7 +3,7 @@ import jwt from "express-jwt";
 import jwks from "jwks-rsa";
 import { getUser, updateUser } from './userData';
 import { MongoClient, Db } from 'mongodb';
-import {NODE_ENV, MONGO_DEV_URI, MONGO_URI} from './config'
+import {NODE_ENV, MONGO_DEV_URI, MONGO_URI, DB_NAME} from './config'
 const port = process.env.PORT || 8080;
 const app = express();
 
@@ -11,7 +11,7 @@ export let db : Db;
 MongoClient.connect(NODE_ENV === 'production' ? MONGO_URI : MONGO_DEV_URI, (err, client) => {
   if(err) return console.error(err)
   console.log('Connected to Mongo DB')
-  db = client.db(NODE_ENV === 'development' ? 'Habit-Calendar-Dev' : 'Habit-Calendar')
+  db = client.db(DB_NAME)
 });
 
 const jwksCallback = jwks.expressJwtSecret({
