@@ -54,7 +54,7 @@ app.get(
       console.log(uid)
       const userData = await getUser(uid)
       return res.json(
-          {success:true, userData}
+          {success:true, user:userData}
       );
     }
 );
