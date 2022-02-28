@@ -61,8 +61,7 @@ app.get(
 
 app.post('/user', requireJWTAuthentication, async (req: any, res: Response) => {
   const uid = req.user.sub
-  updateUser(req.body, uid)
-  const updatedUser = await db.collection('Users').updateOne({uid},{$set:{body:req.body, uid}}, {upsert: true})
+  const updatedUser = await updateUser(req.body, uid)
   res.json({success: true, user: updatedUser})
 })
 
