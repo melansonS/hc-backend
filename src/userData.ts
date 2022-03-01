@@ -55,26 +55,22 @@ export async function getUser(uid: string) {
     // TODO: error handling...
     const user:UserData = userFromMongo.value.body
     const yesterday = subDays(today, 1).getTime();
-    
-    if (user?.checkedDays && !user.checkedDays[currentYearMonth].includes(yesterday)) {
-      console.log('am not streaking');
-      user.currentStreak = 0;
-    }
-    
+      
     // all of this is only calculated on `getUser` which is only called on log in and page load, needs to be moved elsewhere..
     
-    let currentStreak = 0
     // default daysInConsecutiveMonths to values in the current {checkedDays[rearMonth]} or to an empty array
-    const daysInConsecutiveMonths = user.checkedDays[currentYearMonth] || [];
+    let daysInConsecutiveMonths = user.checkedDays[currentYearMonth] || [];
     let consecutiveMonthIndex = 1;
     let yearMonth = `${getYear(subMonths(today, consecutiveMonthIndex))}${getMonth(subMonths(today, consecutiveMonthIndex))}`;
     
     while(user.checkedDays[yearMonth]) {
-      daysInConsecutiveMonths.concat(...user.checkedDays[yearMonth])
+      const checkedDaysInMonth = user.checkedDays[yearMonth]
+      daysInConsecutiveMonths = daysInConsecutiveMonths.concat(checkedDaysInMonth)
       consecutiveMonthIndex++;
       yearMonth = `${getYear(subMonths(today, consecutiveMonthIndex))}${getMonth(subMonths(today, consecutiveMonthIndex))}`;
     }
 
+    let currentStreak = daysInConsecutiveMonths.includes(today) ? 1 : 0;
     if (daysInConsecutiveMonths && daysInConsecutiveMonths.includes(yesterday)) {
       // confirm that {yesterday - 1} is actually checked
       let i = yesterday;
@@ -86,7 +82,11 @@ export async function getUser(uid: string) {
 
     const allCheckedDays = user?.checkedDays
     && Object.values(user.checkedDays).reduce((prev, curr) => [...prev].concat(curr), []);
-    
+
+    if(!allCheckedDays.includes(yesterday)) {
+      user.currentStreak = 0
+    }
+    if(currentStreak > user.longestStreak) user.longestStreak = currentStreak;
     user.currentStreak = currentStreak;
     user.totalDays = allCheckedDays.length;
     return user;
