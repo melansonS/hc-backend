@@ -93,7 +93,7 @@ export async function getUser(uid: string) {
 }
 
 export async function updateUser (user:UserData, uid:string) {
-  const userFromMongo = await db.collection('Users').findOneAndUpdate({uid}, {$set: {body: user}})
+  const userFromMongo = await db.collection('Users').findOneAndUpdate({uid}, {$set: {body: user}}, {returnDocument: 'after'})
   const updatedUser:UserData = userFromMongo.value.body
   
   return updatedUser
