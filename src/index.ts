@@ -42,7 +42,7 @@ app.use((req, res, next) => {
 });
 
 app.get("/public", (req: Request, res: Response) =>
-  res.json({ hello: "world" })
+  res.json({ hello: "world -- HC BACKEND" })
 );
 
 app.get(
