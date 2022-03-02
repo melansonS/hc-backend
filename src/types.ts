@@ -30,3 +30,25 @@ export type ITheme = {
   primary: Partial<IColor>,
   secondary: Partial<IColor>,
 }
+
+
+export type IUserTheme = {
+  colorBlendPercent: number,
+  customTheme: Partial<ITheme> | null,
+  isDarkMode: boolean,
+  themeName: ThemeNamesEnum,
+}
+
+
+export type UserData = {
+name: string
+checkedDays: {
+    [name: string]: number[]
+  }
+isStreaking: boolean
+currentStreak: number
+longestStreak: number
+totalDays: number,
+theme: IUserTheme
+}
+

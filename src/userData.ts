@@ -1,27 +1,7 @@
-import { ITheme, ThemeNamesEnum } from "./types"
+import { ITheme, IUserTheme, ThemeNamesEnum, UserData } from "./types"
 
 import { startOfDay, subDays, subMonths, getYear, getMonth } from 'date-fns'
 import { db } from "./index"
-
-type IUserTheme = {
-    colorBlendPercent: number,
-    customTheme: Partial<ITheme> | null,
-    isDarkMode: boolean,
-    themeName: ThemeNamesEnum,
-  }
-
-
-type UserData = {
-  name: string
-  checkedDays: {
-      [name: string]: number[]
-    }
-  isStreaking: boolean
-  currentStreak: number
-  longestStreak: number
-  totalDays: number,
-  theme: IUserTheme
-}
 
 const defaultTheme: IUserTheme =   {
   colorBlendPercent: 0.14,
@@ -30,7 +10,7 @@ const defaultTheme: IUserTheme =   {
   themeName: 'INDIGO' as ThemeNamesEnum,
 }
 
-const makeDefaultUser = (currentYearMonth:string) :UserData=> ({
+const makeDefaultUser = (currentYearMonth:string): UserData=> ({
   name:'',
   checkedDays:{
     [currentYearMonth]: []
