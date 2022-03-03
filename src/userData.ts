@@ -35,14 +35,14 @@ export async function getUser(uid: string) {
     // TODO: error handling...
     const user:UserData = userFromMongo.value.body
     const yesterday = subDays(today, 1).getTime();
-      
+
     // all of this is only calculated on `getUser` which is only called on log in and page load, needs to be moved elsewhere..
-    
+
     // default daysInConsecutiveMonths to values in the current {checkedDays[rearMonth]} or to an empty array
     let daysInConsecutiveMonths = user.checkedDays[currentYearMonth] || [];
     let consecutiveMonthIndex = 1;
     let yearMonth = `${getYear(subMonths(today, consecutiveMonthIndex))}${getMonth(subMonths(today, consecutiveMonthIndex))}`;
-    
+
     while(user.checkedDays[yearMonth]) {
       const checkedDaysInMonth = user.checkedDays[yearMonth]
       daysInConsecutiveMonths = daysInConsecutiveMonths.concat(checkedDaysInMonth)
@@ -75,6 +75,6 @@ export async function getUser(uid: string) {
 export async function updateUser (user:UserData, uid:string) {
   const userFromMongo = await db.collection('Users').findOneAndUpdate({uid}, {$set: {body: user}}, {returnDocument: 'after'})
   const updatedUser:UserData = userFromMongo.value.body
-  
+
   return updatedUser
 }
