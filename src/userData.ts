@@ -25,6 +25,7 @@ const makeDefaultUser = (currentYearMonth:string): UserData=> ({
 export async function getUser(uid: string) {
     const timezoneOffset =  new Date().getTimezoneOffset()
     const montrealOffset = 300;
+    const montrealToday = 1646370000000 // fri mar 04 montreal
     const today = startOfToday().getTime();
     const currentYearMonth = `${getYear(today)}${getMonth(today)}`
 
@@ -39,7 +40,7 @@ export async function getUser(uid: string) {
     console.log('timezone offset:', timezoneOffset, '\n')
 
     console.log('local:',today - (timezoneOffset * 60 * 1000))
-    console.log('montreal:',today - (montrealOffset * 60 * 1000))
+    console.log('montreal:',montrealToday - (montrealOffset * 60 * 1000))
 
     // all of this is only calculated on `getUser` which is only called on log in and page load, needs to be moved elsewhere..
 
