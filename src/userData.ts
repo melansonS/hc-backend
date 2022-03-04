@@ -23,7 +23,7 @@ const makeDefaultUser = (currentYearMonth:string): UserData=> ({
 })
 
 export async function getUser(uid: string) {
-    const timezoneOffset =  new Date().getUTCMilliseconds()
+    const timezoneOffset =  new Date().getTimezoneOffset()
     const montrealOffset = 300;
     const today = startOfToday().getTime();
     const currentYearMonth = `${getYear(today)}${getMonth(today)}`
