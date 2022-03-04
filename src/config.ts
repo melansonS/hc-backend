@@ -7,7 +7,6 @@ export const MONGO_URI = process.env.MONGO_URI;
 export const MONGO_DEV_URI = process.env.MONGO_DEV_URI;
 export const DB_NAME = process.env.DB_NAME
 
-
 if(!DB_NAME) {
   console.error("DB_NAME not propertly set..")
 }

@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "export NODE_ENV=development&&export DB_NAME=Habit-Calendar-Dev&& nodemon",
+    "dev": "export NODE_ENV=development&& export DB_NAME=Habit-Calendar-Dev&& nodemon",
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
     "build": "tsc",
     "prestart": "npm run build",

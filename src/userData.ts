@@ -36,6 +36,9 @@ export async function getUser(uid: string) {
     const user:UserData = userFromMongo.value.body
     const yesterday = subDays(today, 1).getTime();
 
+    console.log(yesterday, 'yesterday')
+    console.log(startOfDay(subDays(today, 1)).getTime(),'start of yesterday')
+
     // all of this is only calculated on `getUser` which is only called on log in and page load, needs to be moved elsewhere..
 
     // default daysInConsecutiveMonths to values in the current {checkedDays[rearMonth]} or to an empty array
@@ -66,6 +69,8 @@ export async function getUser(uid: string) {
     if(!allCheckedDays.includes(yesterday)) {
       user.currentStreak = 0
     }
+    console.log('currentStreak', user.currentStreak, 'longestStreak', user.longestStreak, 'new curr', currentStreak, )
+
     if(currentStreak > user.longestStreak) user.longestStreak = currentStreak;
     user.currentStreak = currentStreak;
     user.totalDays = allCheckedDays.length;
