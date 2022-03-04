@@ -25,13 +25,8 @@ const makeDefaultUser = (currentYearMonth:string): UserData=> ({
 export async function getUser(uid: string) {
     const timezoneOffset =  new Date().getTimezoneOffset()
     const today = startOfToday().getTime() - (timezoneOffset * 60 * 1000);
-
     const yesterday = startOfYesterday().getTime() - (timezoneOffset * 60 * 1000);
-    console.log(yesterday)
-    
-    console.log("-----------")
     const currentYearMonth = `${getYear(today)}${getMonth(today)}`
-    console.log("in GET USER !?")
 
     const userFromMongo = await db.collection('Users').findOneAndUpdate(
       {uid},
@@ -55,34 +50,17 @@ export async function getUser(uid: string) {
       consecutiveMonthIndex++;
       yearMonth = `${getYear(subMonths(today, consecutiveMonthIndex))}${getMonth(subMonths(today, consecutiveMonthIndex))}`;
     }
-    console.log(daysInConsecutiveMonths)
+
     let currentStreak = daysInConsecutiveMonths.includes(today) ? 1 : 0;
     if (daysInConsecutiveMonths && daysInConsecutiveMonths.includes(yesterday)) {
-      // confirm that {yesterday - 1} is actually checked
-      let i  = 1;
+
       let date = yesterday;
-      // const descendingOrderedDays = daysInConsecutiveMonths.sort((a,b) => b - a)
-      // descendingOrderedDays.forEach((day) => {
-      //   if(day == today || day === day) {
-      //     console.log("woooo, this one's good?")
-      //     currentStreak += 1;
-      //   }
-      //   const year = getYear(date)
-      //   const month = getMonth(date)
-      //   const dateNumber = getDate(date)
-      //   date = new Date(year, month, dateNumber).getTime() - (timezoneOffset * 60 * 1000)
-      //   console.log(day)
-      // })
-      // console.log(descendingOrderedDays)
       while (daysInConsecutiveMonths.includes(date)) {
         const year = getYear(date - 1)
         const month = getMonth(date - 1)
         const dateNumber = getDate(date - 1)
-        console.log(year, month, dateNumber)
         currentStreak += 1;
         date = new Date(year, month, dateNumber).getTime() - (timezoneOffset * 60 * 1000)
-        console.log(date)
-        i++
       }
     }
 
@@ -92,7 +70,7 @@ export async function getUser(uid: string) {
     if(!allCheckedDays.includes(yesterday)) {
       user.currentStreak = 0
     }
-    console.log('currentStreak', user.currentStreak, 'longestStreak', user.longestStreak, 'new curr', currentStreak, )
+
     if(currentStreak > user.longestStreak) user.longestStreak = currentStreak;
     user.currentStreak = currentStreak;
     user.totalDays = allCheckedDays.length;
