@@ -1,6 +1,6 @@
 import { ITheme, IUserTheme, ThemeNamesEnum, UserData } from "./types"
 
-import { startOfDay, subDays, subMonths, getYear, getMonth } from 'date-fns'
+import { subDays, subMonths, getYear, getMonth, startOfToday } from 'date-fns'
 import { db } from "./index"
 
 const defaultTheme: IUserTheme =   {
@@ -23,8 +23,9 @@ const makeDefaultUser = (currentYearMonth:string): UserData=> ({
 })
 
 export async function getUser(uid: string) {
-
-    const today = startOfDay(new Date()).getTime();
+    const timezoneOffset =  new Date().getUTCMilliseconds()
+    const montrealOffset = 300;
+    const today = startOfToday().getTime();
     const currentYearMonth = `${getYear(today)}${getMonth(today)}`
 
     const userFromMongo = await db.collection('Users').findOneAndUpdate(
@@ -35,9 +36,10 @@ export async function getUser(uid: string) {
     // TODO: error handling...
     const user:UserData = userFromMongo.value.body
     const yesterday = subDays(today, 1).getTime();
+    console.log('timezone offset:', timezoneOffset, '\n')
 
-    console.log(yesterday, 'yesterday')
-    console.log(startOfDay(subDays(today, 1)).getTime(),'start of yesterday')
+    console.log('local:',today - (timezoneOffset * 60 * 1000))
+    console.log('montreal:',today - (montrealOffset * 60 * 1000))
 
     // all of this is only calculated on `getUser` which is only called on log in and page load, needs to be moved elsewhere..
 
@@ -70,7 +72,6 @@ export async function getUser(uid: string) {
       user.currentStreak = 0
     }
     console.log('currentStreak', user.currentStreak, 'longestStreak', user.longestStreak, 'new curr', currentStreak, )
-
     if(currentStreak > user.longestStreak) user.longestStreak = currentStreak;
     user.currentStreak = currentStreak;
     user.totalDays = allCheckedDays.length;
