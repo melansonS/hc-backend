@@ -1,6 +1,6 @@
 import { ITheme, IUserTheme, ThemeNamesEnum, UserData } from "./types"
 
-import { subMonths, getYear, getMonth, startOfToday, getDate } from 'date-fns'
+import { subMonths, getYear, getMonth, startOfToday, getDate, startOfYesterday } from 'date-fns'
 import { db } from "./index"
 
 const defaultTheme: IUserTheme =   {
@@ -23,12 +23,13 @@ const makeDefaultUser = (currentYearMonth:string): UserData=> ({
 })
 
 export async function getUser(uid: string) {
-    const msInADay = 60* 60* 24* 1000; // 86400000
     const timezoneOffset =  new Date().getTimezoneOffset()
     const today = startOfToday().getTime() - (timezoneOffset * 60 * 1000);
-    // TODO refactor / remove msInADay
 
-    const yesterday = today - msInADay;
+    const yesterday = startOfYesterday().getTime() - (timezoneOffset * 60 * 1000);
+    console.log(yesterday)
+    
+    console.log("-----------")
     const currentYearMonth = `${getYear(today)}${getMonth(today)}`
     console.log("in GET USER !?")
 
@@ -54,19 +55,33 @@ export async function getUser(uid: string) {
       consecutiveMonthIndex++;
       yearMonth = `${getYear(subMonths(today, consecutiveMonthIndex))}${getMonth(subMonths(today, consecutiveMonthIndex))}`;
     }
-    console.log("!0000!")
+    console.log(daysInConsecutiveMonths)
     let currentStreak = daysInConsecutiveMonths.includes(today) ? 1 : 0;
     if (daysInConsecutiveMonths && daysInConsecutiveMonths.includes(yesterday)) {
       // confirm that {yesterday - 1} is actually checked
       let i  = 1;
       let date = yesterday;
+      // const descendingOrderedDays = daysInConsecutiveMonths.sort((a,b) => b - a)
+      // descendingOrderedDays.forEach((day) => {
+      //   if(day == today || day === day) {
+      //     console.log("woooo, this one's good?")
+      //     currentStreak += 1;
+      //   }
+      //   const year = getYear(date)
+      //   const month = getMonth(date)
+      //   const dateNumber = getDate(date)
+      //   date = new Date(year, month, dateNumber).getTime() - (timezoneOffset * 60 * 1000)
+      //   console.log(day)
+      // })
+      // console.log(descendingOrderedDays)
       while (daysInConsecutiveMonths.includes(date)) {
-        const year = getYear(date)
-        const month = getMonth(date)
-        const dateNumber = getDate(date)
+        const year = getYear(date - 1)
+        const month = getMonth(date - 1)
+        const dateNumber = getDate(date - 1)
         console.log(year, month, dateNumber)
         currentStreak += 1;
         date = new Date(year, month, dateNumber).getTime() - (timezoneOffset * 60 * 1000)
+        console.log(date)
         i++
       }
     }
