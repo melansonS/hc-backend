@@ -27,9 +27,10 @@ export async function getUser(uid: string) {
     const timezoneOffset =  new Date().getTimezoneOffset()
     const today = startOfToday().getTime() - (timezoneOffset * 60 * 1000);
     // TODO refactor / remove msInADay
-    
+
     const yesterday = today - msInADay;
     const currentYearMonth = `${getYear(today)}${getMonth(today)}`
+    console.log("in GET USER !?")
 
     const userFromMongo = await db.collection('Users').findOneAndUpdate(
       {uid},
@@ -39,21 +40,21 @@ export async function getUser(uid: string) {
 
     // TODO: error handling...
     const user:UserData = userFromMongo.value.body
-    
+
     // all of this is only calculated on `getUser` which is only called on log in and page load, needs to be moved elsewhere..
-    
+
     // default daysInConsecutiveMonths to values in the current {checkedDays[rearMonth]} or to an empty array
     let daysInConsecutiveMonths = user.checkedDays[currentYearMonth] || [];
     let consecutiveMonthIndex = 1;
     let yearMonth = `${getYear(subMonths(today, consecutiveMonthIndex))}${getMonth(subMonths(today, consecutiveMonthIndex))}`;
-    
+
     while(user.checkedDays[yearMonth]) {
       const checkedDaysInMonth = user.checkedDays[yearMonth]
       daysInConsecutiveMonths = daysInConsecutiveMonths.concat(checkedDaysInMonth)
       consecutiveMonthIndex++;
       yearMonth = `${getYear(subMonths(today, consecutiveMonthIndex))}${getMonth(subMonths(today, consecutiveMonthIndex))}`;
     }
-
+    console.log("!0000!")
     let currentStreak = daysInConsecutiveMonths.includes(today) ? 1 : 0;
     if (daysInConsecutiveMonths && daysInConsecutiveMonths.includes(yesterday)) {
       // confirm that {yesterday - 1} is actually checked
@@ -63,6 +64,7 @@ export async function getUser(uid: string) {
         const year = getYear(date)
         const month = getMonth(date)
         const dateNumber = getDate(date)
+        console.log(year, month, dateNumber)
         currentStreak += 1;
         date = new Date(year, month, dateNumber).getTime() - (timezoneOffset * 60 * 1000)
         i++
