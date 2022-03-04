@@ -1,6 +1,6 @@
 import { ITheme, IUserTheme, ThemeNamesEnum, UserData } from "./types"
 
-import { subDays, subMonths, getYear, getMonth, startOfToday } from 'date-fns'
+import { subMonths, getYear, getMonth, startOfToday, getDate } from 'date-fns'
 import { db } from "./index"
 
 const defaultTheme: IUserTheme =   {
@@ -22,58 +22,57 @@ const makeDefaultUser = (currentYearMonth:string): UserData=> ({
   theme: defaultTheme
 })
 
-export async function getUser(uid: string, clientToday:number, clientYesterday:number, clientOffset:number) {
+export async function getUser(uid: string) {
+    const msInADay = 60* 60* 24* 1000; // 86400000
     const timezoneOffset =  new Date().getTimezoneOffset()
-    const today = startOfToday().getTime();
-    const currentYearMonth = `${getYear(clientToday)}${getMonth(clientToday)}`
+    const today = startOfToday().getTime() - (timezoneOffset * 60 * 1000);
+    // TODO refactor / remove msInADay
+    
+    const yesterday = today - msInADay;
+    const currentYearMonth = `${getYear(today)}${getMonth(today)}`
 
     const userFromMongo = await db.collection('Users').findOneAndUpdate(
       {uid},
       {$setOnInsert: {uid, body:makeDefaultUser(currentYearMonth)}},
       {upsert: true, returnDocument:'after'}
     )
+
     // TODO: error handling...
     const user:UserData = userFromMongo.value.body
-    // const yesterday = subDays(today, 1).getTime();
-    console.log('timezone offset:', timezoneOffset, '\n')
-
-    console.log('local:',today - (timezoneOffset * 60 * 1000))
-    console.log('client:',clientToday - (clientOffset * 60 * 1000), 'yesterday: ', clientYesterday)
-
+    
     // all of this is only calculated on `getUser` which is only called on log in and page load, needs to be moved elsewhere..
-
+    
     // default daysInConsecutiveMonths to values in the current {checkedDays[rearMonth]} or to an empty array
     let daysInConsecutiveMonths = user.checkedDays[currentYearMonth] || [];
     let consecutiveMonthIndex = 1;
-    let yearMonth = `${getYear(subMonths(clientToday, consecutiveMonthIndex))}${getMonth(subMonths(clientToday, consecutiveMonthIndex))}`;
-
-      console.log(yearMonth, daysInConsecutiveMonths)
-
+    let yearMonth = `${getYear(subMonths(today, consecutiveMonthIndex))}${getMonth(subMonths(today, consecutiveMonthIndex))}`;
+    
     while(user.checkedDays[yearMonth]) {
       const checkedDaysInMonth = user.checkedDays[yearMonth]
       daysInConsecutiveMonths = daysInConsecutiveMonths.concat(checkedDaysInMonth)
       consecutiveMonthIndex++;
-      yearMonth = `${getYear(subMonths(clientToday, consecutiveMonthIndex))}${getMonth(subMonths(clientToday, consecutiveMonthIndex))}`;
+      yearMonth = `${getYear(subMonths(today, consecutiveMonthIndex))}${getMonth(subMonths(today, consecutiveMonthIndex))}`;
     }
 
-    let currentStreak = daysInConsecutiveMonths.includes(clientToday) ? 1 : 0;
-    if (daysInConsecutiveMonths && daysInConsecutiveMonths.includes(clientYesterday)) {
+    let currentStreak = daysInConsecutiveMonths.includes(today) ? 1 : 0;
+    if (daysInConsecutiveMonths && daysInConsecutiveMonths.includes(yesterday)) {
       // confirm that {yesterday - 1} is actually checked
-      const msInADay = 60*60*24*1000 // 86400000
-      let i  = 0;
-      let date = clientYesterday;
+      let i  = 1;
+      let date = yesterday;
       while (daysInConsecutiveMonths.includes(date)) {
+        const year = getYear(date)
+        const month = getMonth(date)
+        const dateNumber = getDate(date)
         currentStreak += 1;
+        date = new Date(year, month, dateNumber).getTime() - (timezoneOffset * 60 * 1000)
         i++
-        date = date - (86400000 * i);
-        console.log(i)
       }
     }
 
     const allCheckedDays = user?.checkedDays
     && Object.values(user.checkedDays).reduce((prev, curr) => [...prev].concat(curr), []);
 
-    if(!allCheckedDays.includes(clientYesterday)) {
+    if(!allCheckedDays.includes(yesterday)) {
       user.currentStreak = 0
     }
     console.log('currentStreak', user.currentStreak, 'longestStreak', user.longestStreak, 'new curr', currentStreak, )

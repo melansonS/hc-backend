@@ -45,19 +45,15 @@ app.get("/ping", (req: Request, res: Response) =>
   res.json({ success: true })
 );
 
-app.post(
-    "/fetchuser",
+app.get(
+    "/user",
     requireJWTAuthentication,
     async (req: any, res: Response) => {
       // requireJWTAuthentication adds a user property with the payload from a valid JWT
       const uid = req.user.sub
-      const { clientToday, clientYesterday, clientOffset} = req.body
       console.log(uid)
-      const userData = await getUser(uid, clientToday, clientYesterday, clientOffset)
-      return res.json(
-          {success:true, user:userData
-          }
-      );
+      const userData = await getUser(uid)
+      return res.json({success:true, user:userData });
     }
 );
 
