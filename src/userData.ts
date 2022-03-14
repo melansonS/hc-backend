@@ -27,10 +27,8 @@ export async function getUser(uid: string) {
     const todayTimeStamp = startOfToday().getTime() - (timezoneOffset * 60 * 1000);
     const today = Date().slice(0,15)
     const yesterday = startOfYesterday().getTime() - (timezoneOffset * 60 * 1000);
-    console.log(Date().slice())
-    const monthYearFormat = 'LLL yyyy'
-    const currentMonthYear = format(todayTimeStamp, monthYearFormat) // month year as string
-    console.log(currentMonthYear)
+    const yearMonthFormat = 'yyyy LLL'
+    const currentYearMonthString = format(todayTimeStamp, yearMonthFormat) // month year as string
     const currentYearMonth = `${getYear(todayTimeStamp)}${getMonth(todayTimeStamp)}`
     const userFromMongo = await db.collection('Users').findOneAndUpdate(
       {uid},
@@ -52,6 +50,8 @@ export async function getUser(uid: string) {
     let daysInConsecutiveMonths = user.checkedDays[currentYearMonth] || [];
     let consecutiveMonthIndex = 1;
     let yearMonth = `${getYear(subMonths(todayTimeStamp, consecutiveMonthIndex))}${getMonth(subMonths(todayTimeStamp, consecutiveMonthIndex))}`;
+    let consecutiveMonthStringIndex = 1;
+    let previousYearMonthString = format(subMonths(todayTimeStamp, consecutiveMonthIndex), yearMonthFormat)
 
     while(user.checkedDays[yearMonth]) {
       const checkedDaysInMonth = user.checkedDays[yearMonth]
@@ -59,6 +59,13 @@ export async function getUser(uid: string) {
       consecutiveMonthIndex++;
       yearMonth = `${getYear(subMonths(todayTimeStamp, consecutiveMonthIndex))}${getMonth(subMonths(todayTimeStamp, consecutiveMonthIndex))}`;
     }
+
+    while(user.checkedDays[previousYearMonthString]) {
+      console.log(previousYearMonthString, '<<')
+      consecutiveMonthStringIndex++;
+      previousYearMonthString = format(subMonths(todayTimeStamp, consecutiveMonthStringIndex), yearMonthFormat)
+    }
+
 
     let currentStreak = daysInConsecutiveMonths.includes(today) ? 1 : 0;
     if (daysInConsecutiveMonths && daysInConsecutiveMonths.includes(new Date(yesterday).toString().slice(0,15))) {
