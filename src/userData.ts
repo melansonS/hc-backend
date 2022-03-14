@@ -1,6 +1,6 @@
 import { ITheme, IUserTheme, ThemeNamesEnum, UserData } from "./types"
 
-import { subMonths, getYear, format, getMonth, startOfToday, getDate, startOfYesterday } from 'date-fns'
+import { subMonths, getYear, format, getMonth, startOfToday, getDate, startOfYesterday, subDays } from 'date-fns'
 import { db } from "./index"
 
 const defaultTheme: IUserTheme =   {
@@ -22,68 +22,49 @@ const makeDefaultUser = (currentYearMonth:string): UserData=> ({
   theme: defaultTheme
 })
 
-export async function getUser(uid: string) {
-    const timezoneOffset =  new Date().getTimezoneOffset()
-    const todayTimeStamp = startOfToday().getTime() - (timezoneOffset * 60 * 1000);
-    const today = Date().slice(0,15)
-    const yesterday = startOfYesterday().getTime() - (timezoneOffset * 60 * 1000);
+export async function getUser(uid: string, today: string) {
+    const todayTimeStamp = startOfToday().getTime()
+    const yesterdayTimeStamp = subDays(new Date(), 1).getTime();
     const yearMonthFormat = 'yyyy LLL'
     const currentYearMonthString = format(todayTimeStamp, yearMonthFormat) // month year as string
-    const currentYearMonth = `${getYear(todayTimeStamp)}${getMonth(todayTimeStamp)}`
     const userFromMongo = await db.collection('Users').findOneAndUpdate(
       {uid},
-      {$setOnInsert: {uid, body:makeDefaultUser(currentYearMonth)}},
+      {$setOnInsert: {uid, body:makeDefaultUser(currentYearMonthString)}},
       {upsert: true, returnDocument:'after'}
     )
 
     // TODO: error handling...
     const user:UserData = userFromMongo.value.body
 
-
-    
-    const checkedDaysAsStrings = user.checkedDays[currentYearMonth].map((day) => new Date(day).toString().slice(0, 15)  );
-    console.log(checkedDaysAsStrings);
-  
     // all of this is only calculated on `getUser` which is only called on log in and page load, needs to be moved elsewhere..
     
     // default daysInConsecutiveMonths to values in the current {checkedDays[rearMonth]} or to an empty array
-    let daysInConsecutiveMonths = user.checkedDays[currentYearMonth] || [];
-    let consecutiveMonthIndex = 1;
-    let yearMonth = `${getYear(subMonths(todayTimeStamp, consecutiveMonthIndex))}${getMonth(subMonths(todayTimeStamp, consecutiveMonthIndex))}`;
+    let daysInConsecutiveMonths = user.checkedDays[currentYearMonthString] || [];
     let consecutiveMonthStringIndex = 1;
-    let previousYearMonthString = format(subMonths(todayTimeStamp, consecutiveMonthIndex), yearMonthFormat)
-
-    while(user.checkedDays[yearMonth]) {
-      const checkedDaysInMonth = user.checkedDays[yearMonth]
-      daysInConsecutiveMonths = daysInConsecutiveMonths.concat(checkedDaysInMonth)
-      consecutiveMonthIndex++;
-      yearMonth = `${getYear(subMonths(todayTimeStamp, consecutiveMonthIndex))}${getMonth(subMonths(todayTimeStamp, consecutiveMonthIndex))}`;
-    }
+    let previousYearMonthString = format(subMonths(todayTimeStamp, consecutiveMonthStringIndex), yearMonthFormat)
 
     while(user.checkedDays[previousYearMonthString]) {
       console.log(previousYearMonthString, '<<')
+      const checkedDaysInMonth = user.checkedDays[previousYearMonthString]
+      daysInConsecutiveMonths = daysInConsecutiveMonths.concat(checkedDaysInMonth)
       consecutiveMonthStringIndex++;
       previousYearMonthString = format(subMonths(todayTimeStamp, consecutiveMonthStringIndex), yearMonthFormat)
     }
 
-
-    let currentStreak = daysInConsecutiveMonths.includes(today) ? 1 : 0;
-    if (daysInConsecutiveMonths && daysInConsecutiveMonths.includes(new Date(yesterday).toString().slice(0,15))) {
-
-      let date = yesterday;
+    let currentStreak = 0
+    if (daysInConsecutiveMonths && daysInConsecutiveMonths.includes(new Date(yesterdayTimeStamp).toString().slice(0,15))) {
+      let date = new Date(yesterdayTimeStamp).toString().slice(0, 15);
       while (daysInConsecutiveMonths.includes(new Date(date).toString().slice(0, 15))) {
-        const year = getYear(date - 1)
-        const month = getMonth(date - 1)
-        const dateNumber = getDate(date - 1)
         currentStreak += 1;
-        date = new Date(year, month, dateNumber).getTime() - (timezoneOffset * 60 * 1000)
+        date = new Date(subDays(yesterdayTimeStamp, currentStreak)).toString().slice(0,15)
       }
+      if( daysInConsecutiveMonths.includes(today) ) currentStreak += 1;
     }
 
     const allCheckedDays = user?.checkedDays
     && Object.values(user.checkedDays).reduce((prev, curr) => [...prev].concat(curr), []);
 
-    if(!allCheckedDays.includes(new Date(yesterday).toString().slice(0,15))) {
+    if(!allCheckedDays.includes(new Date(yesterdayTimeStamp).toString().slice(0,15))) {
       user.currentStreak = 0
     }
 
