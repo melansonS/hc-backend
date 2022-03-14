@@ -43,7 +43,7 @@ export type IUserTheme = {
 export type UserData = {
 name: string
 checkedDays: {
-    [name: string]: number[]
+    [name: string]: string[]
   }
 isStreaking: boolean
 currentStreak: number

@@ -1,0 +1,8 @@
+all incoming dates are as strings
+ - send stings from front end []
+
+store strings in database
+ - current year month number to year month strgin []
+ - timestrings to sliced  new date strings [] -- // new Date(day).toString().slice(0, 15)
+
+loop over year months as strings []
