@@ -54,15 +54,6 @@ app.get('/user', requireJWTAuthentication, async (req: any, res: Response) => {
     }
 );
 
-app.get('/testing', requireJWTAuthentication, async (req: any, res: Response) => {
-  // requireJWTAuthentication adds a user property with the payload from a valid JWT
-  const uid = req.user.sub
-  console.log(uid)
-  const userData = await getUser(uid)
-  return res.json({success:true, user:userData });
-}
-);
-
 app.post('/user', requireJWTAuthentication, async (req: any, res: Response) => {
   const uid = req.user.sub
   const updatedUser = await updateUser(req.body, uid)
